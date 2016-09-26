@@ -1,0 +1,35 @@
+// Spike fuzzer script to fuzz an HTTP get request, specifically the WebResource.axd query strings
+// Run by using generic_send_tcp 192.168.32.124 80 get_webresource.spk 0 0
+
+// I built this by using BurpSuite to intercept the HTTP get
+// We could fuzz any/all of these fields
+// Change the host field as appropriate, or fuzz it 
+
+// s_string denotes constants.  \r\n signifies a carriage return and line feed
+
+// s_string_variable denotes our fuzz target.  On the first iteration, it will have the value specified here.
+// Subsequent iterations will have fuzz values inserted by Spike.  Do a packet capture while runnning this script to see the fuzz 
+// values used by Spike.
+
+// Grid
+
+s_string("GET /WebResource.axd?d=");
+s_string_variable("FoQLHGDQUESo5X3fP1itgw2&t=634050968073162769");
+s_string(" HTTP/1.1");
+s_string("\r\n"); 
+s_string("Host: www.test-intranet.com");
+s_string("\r\n");
+s_string("User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:31.0) Gecko/20100101 Firefox/31.0 Iceweasel/31.8.0");
+s_string("\r\n");
+s_string("Accept: */*");
+s_string("\r\n");
+s_string("Accept-Language: en-US,en;q=0.5");
+s_string("\r\n");
+s_string("Accept-Encoding: gzip, deflate");
+s_string("\r\n");
+s_string("Referer: http://www.test-intranet.com/Mainpg.aspx");
+s_string("\r\n");
+s_string("Cookie: ASP.NET_SessionId=erygx0554bl2ek55fhef23zw");
+s_string("\r\n");
+s_string("Connection: keep-alive");
+s_string("\r\n\r\n");

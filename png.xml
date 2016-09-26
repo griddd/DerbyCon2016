@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Peach xmlns="http://peachfuzzer.com/2012/Peach" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://peachfuzzer.com/2012/Peach /peach/peach.xsd">
+
+	<!-- Fuzzing the mspaint program with malformed PNG picture files -->
+	<DataModel name="TheDataModel">
+		<Blob />
+	</DataModel>
+	
+
+	<!-- This is our simple png state model -->
+	<StateModel name="TheState" initialState="Initial">
+		<State name="Initial">			
+			<!-- Write out our png file -->
+			<Action type="output">
+				<DataModel ref="TheDataModel"/>
+				
+				<!-- This is our folder of sample files to read in -->
+				<Data name="data" fileName="C:\PNG_test_files\*.png" />
+			</Action>
+
+			<Action type="close"/>
+
+			<!-- Launch the target process -->
+			<Action type="call" method="LaunchViewer" publisher="Peach.Agent"/>
+		</State>
+
+	</StateModel>
+	
+	
+	<Agent name="WinAgent">
+		<Monitor class="WindowsDebugger">
+			<Param name="CommandLine" value="mspaint.exe fuzzed.png" />
+			<Param name="WinDbgPath" value="C:\Program Files (x86)\Windows Kits\8.1\Debuggers\x64" />
+			<Param name="StartOnCall" value="LaunchViewer"/>
+			<Param name="CpuKill" value="true" />			
+		</Monitor>
+		
+		<Monitor class="PageHeap">
+			<Param name="Executable" value="mspaint.exe"/>
+			<Param name="WinDbgPath" value="C:\Program Files (x86)\Windows Kits\8.1\Debuggers\x64" />
+		</Monitor>
+	</Agent>
+
+
+	<Test name="Default">
+		<Agent ref="WinAgent" platform="windows"/>
+		
+		<StateModel ref="TheState"/>
+		
+		<Publisher class="File">
+			<Param name="FileName" value="fuzzed.png"/>
+		</Publisher>
+
+		<Strategy class="Random"/>
+		
+		<Logger class="Filesystem">
+			<Param name="Path" value="logs"/>
+		</Logger>
+	</Test>
+
+</Peach>
+<!-- end -->

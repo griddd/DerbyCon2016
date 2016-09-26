@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Peach xmlns="http://peachfuzzer.com/2012/Peach" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://peachfuzzer.com/2012/Peach /peach/peach.xsd">
+
+	<!-- Fuzzing the Extract program with a malformed directory parameter -->
+	<!-- I put Extract.exe and Extract.exe.config in the Peach directory -->
+	<DataModel name="program">
+		<String value="Extract.exe " />
+	</DataModel>
+	
+	
+	<DataModel name="parameter">
+		<String name="parameter value" value="C:\scans" >
+			<Analyzer class="StringToken"/>	
+		</String>
+	</DataModel>
+	
+	<!--
+	To fuzz a command-line program which takes more than one argument, additional DataModel parameters would go here
+	Note the delimiter (a space in this example) before the parameter value.  Substitute the appropriate parameter delimiter as needed
+	
+	for example
+	<DataModel name="parameter2">
+		<String name="parameter2 value" value=" C:\scans" >
+			<Analyzer class="StringToken"/>	
+		</String>
+	</DataModel>
+	
+	<DataModel name="parameter3">
+		<String name="parameter3 value" value=" C:\scans" >
+			<Analyzer class="StringToken"/>	
+		</String>
+	</DataModel>
+	.
+	.
+	.
+	-->	
+	
+	<StateModel name="TheState" initialState="Initial">
+		<State name="Initial">
+			<!-- we write a batch file which Peach calls -->
+		    <!-- for example, a test run would have the contents "Extract.exe C:\scans" in the batch file -->	
+		    <!-- subsequent runs will have the contents "Extract.exe [fuzzed data goes here]" -->		   		   
+      		<Action type="output">
+          		<DataModel ref="program"/>
+      		</Action>
+      		
+      		<Action type="output">
+          		<DataModel ref="parameter"/>
+      		</Action>     
+      		
+      		<!--
+      		Additional command-line program parameters would be specified here
+      		for example
+      		<Action type="output">
+          		<DataModel ref="parameter2"/>
+      		</Action>
+      		
+      		<Action type="output">
+          		<DataModel ref="parameter3"/>
+      		</Action>
+      		.
+      		.
+      		.      		
+      		-->
+      		
+      		<Action type="close" /> 	      		
+
+       		<Action type="call" method="Runprogram" publisher="Peach.Agent"/>
+   		</State>
+	</StateModel>
+	
+	
+	<Agent name="WinAgent">
+		<Monitor class="WindowsDebugger">			
+			<Param name="CommandLine" value="C:\Peach Fuzzer\call_program.bat"/>
+			<Param name="WinDbgPath" value="C:\Program Files (x86)\Windows Kits\8.1\Debuggers\x64" />
+			<Param name="StartOnCall" value="Runprogram"/>
+			<Param name="NoCpuKill" value="true" />			
+			<!-- The following 2 lines allow Extract.exe to finish processing before Peach goes to the next test case -->
+			<!-- These may or may not be needed -->			
+			<!-- <Param name="WaitForExitOnCall" value="true" /> -->
+			<!-- <Param name="WaitForExitTimeout" value="-1" /> -->
+		</Monitor>
+		
+		<Monitor class="PageHeap">			
+			<Param name="Executable" value="C:\Peach Fuzzer\call_program.bat"/>
+			<Param name="WinDbgPath" value="C:\Program Files (x86)\Windows Kits\8.1\Debuggers\x64" />
+		</Monitor>		
+		
+		<!-- Close Windows debug popup windows -->
+		<Monitor class="PopupWatcher">
+			<Param name="WindowNames" value="Extract" />
+		</Monitor>					
+	</Agent>
+
+
+	<Test name="Default">		
+	    <!-- We only want to fuzz the Extract program's parameter, hence the following line -->
+		<Exclude xpath="//program" />				
+		
+		<Agent ref="WinAgent" platform="windows"/>
+		
+		<StateModel ref="TheState"/>				
+
+		<Strategy class="Sequential"/>				
+		
+		<Publisher class="File">
+			<Param name="FileName" value="call_program.bat" />			
+		</Publisher>		
+		
+		<Logger class="Filesystem">
+			<Param name="Path" value="C:\Peach Fuzzer\logs"/>
+		</Logger>
+		
+		<!-- We exclude certain mutators that aren't useful -->
+		<!-- Mutators list is at http://community.peachfuzzer.com/v3/Mutators.html --> 
+		<!-- For best fuzzing coverage, don't exclude anything -->
+		<Mutators mode="exclude">
+			<Mutator class="ArrayNumericalEdgeCasesMutator" />
+			<Mutator class="ArrayRandomizeOrderMutator" />
+			<Mutator class="ArrayReverseOrderMutator" />
+			<Mutator class="ArrayVarianceMutator" />
+			<Mutator class="BlobBitFlipperMutator" />
+			<Mutator class="BlobDWORDSliderMutator" />
+			<Mutator class="BlobMutator" />																
+			<Mutator class="UnicodeStringsMutator" />
+			<Mutator class="ValidValuesMutator" />
+			<Mutator class="WordListMutator" />
+			<Mutator class="XmlW3CMutator" />
+			<!-- misspellings -->
+			<Mutator class="SizedDataVaranceMutator" />
+			<Mutator class="SizedVaranceMutator" />
+		</Mutators>									
+	</Test>
+
+</Peach>

@@ -1,0 +1,31 @@
+// Spike fuzzer script to fuzz an HTTP get request
+// Run by using generic_send_tcp 192.168.23.101 80 get.spk 0 0
+
+// I built this by using BurpSuite to intercept the HTTP get
+// We could fuzz any/all of these fields, but only fuzzing User-Agent right now
+// Just connects to the website and gets the main page
+// Change the host field as appropriate, or fuzz it 
+
+// s_string denotes constants.  \r\n signifies a carriage return and line feed
+
+// s_string_variable denotes our fuzz target.  On the first iteration, it will have the value specified here.
+// Subsequent iterations will have fuzz values inserted by Spike.  Do a packet capture while runnning this script to see the fuzz 
+// values used by Spike.
+
+// Grid
+
+s_string("GET /example.aspx HTTP/1.1");
+s_string("\r\n"); 
+s_string("Host: www.test-intranet.com");
+s_string("\r\n");
+s_string("User-Agent: ");
+s_string_variable("Mozilla/5.0 (X11; Linux x86_64; rv:31.0) Gecko/20100101 Firefox/31.0 Iceweasel/31.8.0");
+s_string("\r\n");
+s_string("Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
+s_string("\r\n");
+s_string("Accept-Language: en-US,en;q=0.5");
+s_string("\r\n");
+s_string("Accept-Encoding: gzip, deflate");
+s_string("\r\n");
+s_string("Connection: keep-alive");
+s_string("\r\n\r\n");
